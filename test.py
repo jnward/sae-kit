@@ -2,12 +2,12 @@
 %load_ext autoreload
 %autoreload 2
 import torch
-from jsae.utils import cached_activation_generator, compute_metrics
+from sae_kit.utils import cached_activation_generator, compute_metrics
 from datasets import load_dataset, IterableDataset, Dataset
 from transformer_lens import HookedTransformer
 from tqdm import tqdm
-from jsae.sparse_autoencoder import SparseAutoencoder, Encoder, Decoder
-from jsae.gradient_pursuit import gradient_pursuit, gradient_descent, gradient_descent_topk
+from sae_kit.sparse_autoencoder import SparseAutoencoder, Encoder, Decoder
+from sae_kit.gradient_pursuit import gradient_pursuit, gradient_descent, gradient_descent_topk
 
 
 # %%
@@ -43,12 +43,12 @@ batch_size = 128
 my_data_generator = cached_activation_generator(
     my_model,
     my_dataset,
+    hook_name,
     batch_size,
     16,
     16 * 8,
     128,
     1,
-    hook_name,
 )
 
 # %%

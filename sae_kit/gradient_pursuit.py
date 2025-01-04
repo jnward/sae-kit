@@ -1,7 +1,7 @@
 import torch
 from torch.optim.adam import Adam
 from torch.nn import functional as F
-from jsae.decoder import Decoder
+from sae_kit.decoder import Decoder
 from tqdm import tqdm
 
 

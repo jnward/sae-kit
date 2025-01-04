@@ -89,12 +89,12 @@ def cache_activations_to_disk(
 def cached_activation_generator(
     model: HookedTransformer,
     dataset: Dataset | IterableDataset,
+    hook_name: str,
     activation_batch_size: int,
     generator_batch_size=24,
     examples_per_run=2048,
     ctx_len=128,
     skip_first_n_tokens=10,
-    hook_name="blocks.8.hook_resid_pre",
 ):
     data_iter = token_iter(model, dataset, generator_batch_size, ctx_len)  # shuffle?
     batches_per_run = examples_per_run // generator_batch_size
