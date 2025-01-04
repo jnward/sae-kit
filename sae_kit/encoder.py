@@ -28,6 +28,7 @@ class Encoder(nn.Module):
         self.apply_preencoder_bias = apply_preencoder_bias
         self.dtype = dtype
         self.device = device
+        self._trainable = True
 
         if preencoder_bias is None and apply_preencoder_bias:
             logging.warning(
@@ -80,3 +81,13 @@ class Encoder(nn.Module):
             y += self.mlp_path(x)
         activations = F.relu(y)
         return self.top_k(activations)
+
+    @property
+    def trainable(self):
+        return self._trainable
+
+    @trainable.setter
+    def trainable(self, value):
+        self.W_dec.requires_grad = value
+        self.b_dec.requires_grad = value
+        self._trainable = value

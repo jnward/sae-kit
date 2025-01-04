@@ -10,6 +10,7 @@ class Decoder(nn.Module):
         self.d_out = d_out
         self.dtype = dtype
         self.device = device
+        self._trainable = True
 
         self.W_dec = nn.Parameter(
             nn.init.kaiming_uniform_(
@@ -36,3 +37,13 @@ class Decoder(nn.Module):
             parallel_component,
             self.W_dec.data,
         )
+
+    @property
+    def trainable(self):
+        return self._trainable
+
+    @trainable.setter
+    def trainable(self, value):
+        self.W_dec.requires_grad = value
+        self.b_dec.requires_grad = value
+        self._trainable = value

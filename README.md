@@ -79,7 +79,7 @@ print(f"FVU: {fvu}")  # should be better than using the pretrained encoder :)
 
 ### Workflow 2: Training MLP Encoders
 
-#### Option 1: Initialize MLP with Skip Connections from Pretrained Encoder
+#### Example 1: Finetine a pretrained SAE by adding an MLP layer to the encoder 
 
 ```python
 # Load pretrained SAE with MLP encoder
@@ -92,9 +92,11 @@ mlp_sae = SparseAutoencoder.from_pretrained(
     n_hidden=1,     # Number of hidden layers
 )
 # The encoder is initialized with skip connections from the original weights
+
+# ... training loop
 ```
 
-#### Option 2: Train New MLP Encoder from Scratch
+#### Example 2: Train New MLP Encoder from scratch with a frozen decocer
 
 ```python
 # First load pretrained SAE for its dictionary
@@ -113,6 +115,10 @@ new_sae = SparseAutoencoder(
     n_hidden=2,
     device="cuda",
 )
+
+new_sae.decoder.trainable = False
+
+# ... training loop
 ```
 
 ## Roadmap
