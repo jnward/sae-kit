@@ -84,7 +84,7 @@ def cache_activations_to_disk(
             file_acc += 1
             acts = []
             act_acc = 0
-    if act_acc < max_acts_per_file:
+    if act_acc > 0:
         acts_cat = torch.cat(acts, dim=0)
         acts_cat = acts_cat[:, skip_first_n_tokens:, :]
         acts_cat = acts_cat.reshape(-1, acts_cat.size(-1))
