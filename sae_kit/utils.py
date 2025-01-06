@@ -5,6 +5,8 @@ from datasets import DatasetDict, Dataset, IterableDatasetDict, IterableDataset
 
 from typing import Union
 
+from pathlib import Path
+
 AnyDataset = Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]
 
 
@@ -52,16 +54,19 @@ def cache_activations_to_disk(
     model: HookedTransformer,
     dataset: Dataset | IterableDataset,
     n_activations: int,
-    generator_batch_size=24,
-    skip_first_n_tokens=1,
-    ctx_len=128,
-    max_acts_per_file=1_000_000,
-    hook_name="blocks.8.hook_resid_pre",
+    generator_batch_size: int = 24,
+    skip_first_n_tokens: int = 1,
+    ctx_len: int = 128,
+    max_acts_per_file: int = 1_000_000,
+    hook_name: str = "blocks.8.hook_resid_pre",
+    dir: str = "acts",
 ):
     data_iter = token_iter(model, dataset, generator_batch_size, ctx_len)
     acts = []
     act_acc = 0
     file_acc = 0
+    save_dir = Path(dir)
+    save_dir.mkdir(parents=True, exist_ok=True)
     for _ in tqdm(
         range(n_activations // (generator_batch_size * (ctx_len - skip_first_n_tokens)))
     ):
@@ -74,7 +79,8 @@ def cache_activations_to_disk(
             acts_cat = acts_cat[:, skip_first_n_tokens:, :]
             acts_cat = acts_cat.reshape(-1, acts_cat.size(-1))
             acts_cat = acts_cat[torch.randperm(acts_cat.size(0))]
-            torch.save(acts_cat, f"acts/acts_{file_acc}.pt")
+            save_path = save_dir / f"acts_{file_acc}.pt"
+            torch.save(acts_cat, save_path)
             file_acc += 1
             acts = []
             act_acc = 0
@@ -84,6 +90,23 @@ def cache_activations_to_disk(
         acts_cat = acts_cat.reshape(-1, acts_cat.size(-1))
         acts_cat = acts_cat[torch.randperm(acts_cat.size(0))]
         torch.save(acts_cat, f"acts/acts_{file_acc}.pt")
+
+
+def disk_activation_generator(batch_size, num_files=None, dir="acts"):
+    read_dir = Path(dir)
+    current_batch = []
+    if num_files is None:
+        num_files = len(list(read_dir.glob("acts_*.pt")))
+    print(f"Reading from {num_files} files")
+    for file_id in range(num_files):
+        read_path = read_dir / f"acts_{file_id}.pt"
+        print("loading", read_path)
+        acts = torch.load(read_path)
+        for row in acts:
+            current_batch.append(row.unsqueeze(0))
+            if len(current_batch) == batch_size:
+                yield torch.cat(current_batch, dim=0)
+                current_batch = []
 
 
 def cached_activation_generator(
