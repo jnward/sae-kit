@@ -24,16 +24,16 @@ class Decoder(nn.Module):
         return x @ self.W_dec + self.b_dec
 
     def normalize_weights(self):
-        self.W_dec.data = F.normalize(self.W_dec.data, p=2, dim=0)
+        self.W_dec.data = F.normalize(self.W_dec.data, p=2, dim=1)
 
     def remove_parallel_gradient_component(self):
         parallel_component = torch.einsum(
-            "ab, ab -> b",
+            "nd, nd -> n",
             self.W_dec.grad,
             self.W_dec.data,
         )
-        self.decoder.weight.grad -= torch.einsum(
-            "b, ab -> ab",
+        self.W_dec.grad -= torch.einsum(
+            "n, nd -> nd",
             parallel_component,
             self.W_dec.data,
         )

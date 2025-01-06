@@ -88,6 +88,6 @@ class Encoder(nn.Module):
 
     @trainable.setter
     def trainable(self, value):
-        self.W_dec.requires_grad = value
-        self.b_dec.requires_grad = value
+        self.W_enc.requires_grad = value
+        self.b_enc.requires_grad = value
         self._trainable = value
