@@ -89,7 +89,8 @@ def cache_activations_to_disk(
         acts_cat = acts_cat[:, skip_first_n_tokens:, :]
         acts_cat = acts_cat.reshape(-1, acts_cat.size(-1))
         acts_cat = acts_cat[torch.randperm(acts_cat.size(0))]
-        torch.save(acts_cat, f"acts/acts_{file_acc}.pt")
+        save_path = save_dir / f"acts_{file_acc}.pt"
+        torch.save(acts_cat, save_path)
 
 
 def disk_activation_generator(batch_size, num_files=None, dir="acts"):
