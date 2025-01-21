@@ -1,7 +1,7 @@
 import torch
 from torch.optim.adam import Adam
 from torch.nn import functional as F
-from sae_kit.decoder import Decoder
+from .decoder import Decoder
 from tqdm import tqdm
 
 
@@ -11,7 +11,10 @@ def gradient_pursuit(activations: torch.Tensor, decoder: Decoder, k: int):
 
     unbiased_targets = activations.to(decoder.device) - decoder.b_dec
     feature_acts = torch.zeros(
-        b, n, dtype=unbiased_targets.dtype, device=unbiased_targets.device
+        b,
+        n,
+        dtype=unbiased_targets.dtype,
+        device=unbiased_targets.device,
     )
 
     for _ in range(k):
