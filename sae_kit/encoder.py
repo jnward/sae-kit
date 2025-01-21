@@ -46,7 +46,7 @@ class Encoder(nn.Module):
 
         self.W_enc = nn.Parameter(
             nn.init.kaiming_uniform_(
-                torch.empty(n_features, d_in, dtype=dtype, device=device)
+                torch.empty(d_in, n_features, dtype=dtype, device=device)
             )
         )
         self.b_enc = nn.Parameter(torch.zeros(n_features, dtype=dtype, device=device))
