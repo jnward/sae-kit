@@ -25,7 +25,7 @@ class SparseAutoencoder(nn.Module):
     ):
         super().__init__()
 
-        self.normalize_activations=normalize_activations
+        self.normalize_activations = normalize_activations
 
         # Initialize from provided components or parameters
         if encoder is not None and decoder is not None:
@@ -207,7 +207,7 @@ class SparseAutoencoder(nn.Module):
         if not self.normalize_activations:
             return self.decode(self.encode(x))
         x_norm = x.norm(dim=1, keepdim=True)
-        scale_factor = 1/math.sqrt(self.d_in)
+        scale_factor = 1 / math.sqrt(self.d_in)
         x_scaled = x * scale_factor / x_norm
         reconstruction = self.decode(self.encode(x_scaled))
         return reconstruction * x_norm / scale_factor
