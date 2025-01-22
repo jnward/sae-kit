@@ -101,7 +101,7 @@ def disk_activation_generator(batch_size, num_files=None, dir="acts"):
     print(f"Reading from {num_files} files")
     for file_id in range(num_files):
         read_path = read_dir / f"acts_{file_id}.pt"
-        print("loading", read_path)
+        # print("loading", read_path)
         acts = torch.load(read_path)
         for row in acts:
             current_batch.append(row.unsqueeze(0))

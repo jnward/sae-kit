@@ -5,6 +5,7 @@ from sae_lens import SAE as SAELensAutoencoder
 import logging
 from .encoder import Encoder
 from .decoder import Decoder
+import math
 
 
 class SparseAutoencoder(nn.Module):
@@ -20,8 +21,11 @@ class SparseAutoencoder(nn.Module):
         device="cpu",
         encoder=None,
         decoder=None,
+        normalize_activations=False,
     ):
         super().__init__()
+
+        self.normalize_activations=normalize_activations
 
         # Initialize from provided components or parameters
         if encoder is not None and decoder is not None:
@@ -79,6 +83,8 @@ class SparseAutoencoder(nn.Module):
             dtype=dtype,
             device=device,
         )
+        # initialize encoder to be the transpose of the decoder
+        self.encoder.W_enc.data = self.decoder.W_dec.T.clone()
 
     def _init_from_encoder_decoder(self, encoder, decoder):
         assert (
@@ -197,5 +203,11 @@ class SparseAutoencoder(nn.Module):
     def decode(self, x):
         return self.decoder(x)
 
-    def forward(self, x):
-        return self.decode(self.encode(x))
+    def forward(self, x: torch.Tensor):
+        if not self.normalize_activations:
+            return self.decode(self.encode(x))
+        x_norm = x.norm(dim=1, keepdim=True)
+        scale_factor = 1/math.sqrt(self.d_in)
+        x_scaled = x * scale_factor / x_norm
+        reconstruction = self.decode(self.encode(x_scaled))
+        return reconstruction * x_norm / scale_factor
