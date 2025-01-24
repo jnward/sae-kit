@@ -93,13 +93,17 @@ def cache_activations_to_disk(
         torch.save(acts_cat, save_path)
 
 
-def disk_activation_generator(batch_size, num_files=None, dir="acts"):
+def disk_activation_generator(batch_size, num_files=None, dir="acts", skip_first_n=0):
     read_dir = Path(dir)
     current_batch = []
     if num_files is None:
         num_files = len(list(read_dir.glob("acts_*.pt")))
-    print(f"Reading from {num_files} files")
-    for file_id in range(num_files):
+    print(f"Reading from {num_files} files", end="")
+    if skip_first_n:
+        print(f", skipping first {skip_first_n}")
+    else:
+        print()
+    for file_id in range(skip_first_n, num_files):
         read_path = read_dir / f"acts_{file_id}.pt"
         # print("loading", read_path)
         acts = torch.load(read_path)
