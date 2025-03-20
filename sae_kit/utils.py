@@ -135,6 +135,7 @@ def cached_activation_generator(
     ctx_len=128,
     skip_first_n_tokens=10,
     save_to_disk: str | None = None,
+    return_tokens: bool = False,
 ):
     """
     Generate activations and cache them in memory, with optional saving to disk.
@@ -175,6 +176,7 @@ def cached_activation_generator(
     
     while True:
         my_acts = []
+        my_tokens = []
         print(f"Generating new activations (batch size: {generator_batch_size}, batches: {batches_per_run})...")
         
         # Generate activations for this run
@@ -183,6 +185,8 @@ def cached_activation_generator(
                 token_batch = next(data_iter)
                 activations = get_activations(model, token_batch, hook_name)
                 my_acts.append(activations)
+                if return_tokens:
+                    my_tokens.append(token_batch)
             except StopIteration:
                 print("Dataset exhausted.")
                 if not my_acts:  # No activations generated
@@ -199,11 +203,21 @@ def cached_activation_generator(
         acts_cat = torch.cat(my_acts, dim=0)
         acts_cat = acts_cat[:, skip_first_n_tokens:, :]
         acts_cat = acts_cat.reshape(-1, acts_cat.size(-1))
-        acts_cat = acts_cat[torch.randperm(acts_cat.size(0))]
+        randperm = torch.randperm(acts_cat.size(0))
+        acts_cat = acts_cat[randperm]
+
+        if return_tokens:
+            tokens_cat = torch.cat(my_tokens, dim=0)
+            tokens_cat = tokens_cat[:, skip_first_n_tokens:]
+            tokens_cat = tokens_cat.reshape(-1)
+            tokens_cat = tokens_cat[randperm]
         
         # Yield batches for training
         for i in range(0, len(acts_cat), activation_batch_size):
-            yield acts_cat[i : i + activation_batch_size]
+            if return_tokens:
+                yield acts_cat[i : i + activation_batch_size], tokens_cat[i : i + activation_batch_size]
+            else:
+                yield acts_cat[i : i + activation_batch_size]
 
 
 def disk_activation_generator(batch_size, num_files=None, dir="acts", skip_first_n=0):
